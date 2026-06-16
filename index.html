@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git &amp; GitHub — Field Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1320;
+    --bg-raised:#161d2e;
+    --bg-code:#0a0e17;
+    --border:#243049;
+    --border-soft:#1b2336;
+    --text:#e7ecf7;
+    --text-dim:#94a2c0;
+    --text-faint:#5f6e8c;
+    --accent:#f4b740;      /* amber — command keyword / signature */
+    --cyan:#4cc3ff;        /* links / interactive */
+    --green:#52e09b;       /* safe / additions */
+    --red:#ff7a90;         /* destructive / danger */
+    --purple:#bb8cff;      /* branches */
+    --radius:10px;
+    --sidebar:264px;
+    --content-max:860px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:24px}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:15.5px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(244,183,64,.28)}
+
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  code{font-family:'JetBrains Mono',monospace;font-size:.88em}
+
+  /* ---------- Layout ---------- */
+  .shell{display:flex;min-height:100vh}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:var(--sidebar);
+    flex:0 0 var(--sidebar);
+    border-right:1px solid var(--border);
+    background:linear-gradient(180deg,#10172700,#0c111c 90%),var(--bg);
+    height:100vh;position:sticky;top:0;
+    overflow-y:auto;padding:26px 18px 60px;
+  }
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:22px;padding:0 6px}
+  .brand .glyph{flex:0 0 34px}
+  .brand h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;font-weight:700;letter-spacing:-.2px;line-height:1.15;color:var(--text)
+  }
+  .brand span{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;font-weight:500;margin-top:2px}
+
+  .nav-group{margin-bottom:6px}
+  .nav-label{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--text-faint);padding:14px 10px 6px
+  }
+  .nav a{
+    display:flex;align-items:center;gap:9px;
+    color:var(--text-dim);font-size:13.5px;font-weight:500;
+    padding:6px 10px;border-radius:7px;border-left:2px solid transparent;
+    transition:background .15s,color .15s
+  }
+  .nav a:hover{background:var(--bg-raised);color:var(--text);text-decoration:none}
+  .nav a.active{color:var(--accent);background:rgba(244,183,64,.08);border-left-color:var(--accent)}
+  .nav a .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.45;flex:0 0 5px}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+  .wrap{width:100%;max-width:var(--content-max);padding:0 30px 120px}
+
+  /* search bar */
+  .searchbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(14,19,32,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border-soft);
+    padding:16px 0 14px;margin-bottom:8px
+  }
+  .search-inner{position:relative}
+  .search-inner svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.5}
+  #search{
+    width:100%;background:var(--bg-code);border:1px solid var(--border);
+    color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;
+    padding:12px 14px 12px 42px;border-radius:9px;outline:none;transition:border .15s,box-shadow .15s
+  }
+  #search::placeholder{color:var(--text-faint)}
+  #search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(244,183,64,.13)}
+  .search-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);margin-top:8px;height:14px}
+  .search-meta kbd{background:var(--bg-raised);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10.5px;color:var(--text-dim)}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:48px 0 30px;border-bottom:1px solid var(--border-soft);margin-bottom:14px}
+  .hero .kicker{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+  .hero h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(30px,5vw,46px);font-weight:700;line-height:1.05;letter-spacing:-1px;margin-bottom:18px}
+  .hero h2 em{font-style:normal;color:var(--accent)}
+  .hero p{color:var(--text-dim);max-width:60ch;font-size:16px}
+  .hero .reading{display:flex;gap:22px;flex-wrap:wrap;margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-faint)}
+  .hero .reading b{color:var(--text);font-weight:500}
+
+  /* ---------- Sections ---------- */
+  section{padding-top:34px;scroll-margin-top:14px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .sec-head h3{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+  .sec-head h3 .hash{color:var(--accent);font-weight:500}
+  .sec-head .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-faint);margin-left:auto}
+  .sec-intro{color:var(--text-dim);margin:8px 0 22px;max-width:68ch}
+  .sec-intro strong{color:var(--text);font-weight:600}
+
+  /* ---------- Command cards ---------- */
+  .cmd{
+    background:var(--bg-raised);border:1px solid var(--border-soft);
+    border-left:3px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:13px;transition:border-color .15s
+  }
+  .cmd:hover{border-left-color:var(--accent)}
+  .cmd.danger{border-left-color:var(--red)}
+  .cmd.danger:hover{border-left-color:var(--red)}
+  .cmd-top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .cmd-line{
+    font-family:'JetBrains Mono',monospace;font-size:14.5px;font-weight:500;
+    color:var(--text);flex:1;min-width:0;word-break:break-word
+  }
+  .cmd-line .tok{color:var(--accent)}
+  .cmd-line .opt{color:var(--cyan)}
+  .cmd-line .arg{color:var(--purple);font-style:italic}
+  .cmd-line .pre{color:var(--text-faint)}
+
+  .badge{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:20px;font-weight:700;white-space:nowrap}
+  .badge.most{background:rgba(82,224,155,.13);color:var(--green);border:1px solid rgba(82,224,155,.3)}
+  .badge.danger{background:rgba(255,122,144,.13);color:var(--red);border:1px solid rgba(255,122,144,.32)}
+  .badge.safe{background:rgba(76,195,255,.1);color:var(--cyan);border:1px solid rgba(76,195,255,.28)}
+
+  .copy{
+    background:transparent;border:1px solid var(--border);color:var(--text-faint);
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;cursor:pointer;
+    padding:4px 9px;border-radius:6px;transition:all .15s;white-space:nowrap
+  }
+  .copy:hover{color:var(--text);border-color:var(--text-dim)}
+  .copy.done{color:var(--green);border-color:var(--green)}
+
+  .cmd-desc{color:var(--text-dim);font-size:14px;margin-top:9px}
+  .cmd-desc code{background:var(--bg-code);padding:1px 6px;border-radius:4px;color:var(--accent);border:1px solid var(--border-soft)}
+  .cmd-note{
+    font-size:13px;color:var(--text-faint);margin-top:9px;padding-left:12px;
+    border-left:2px solid var(--border);font-style:italic
+  }
+  .cmd-note.warn{border-left-color:var(--red);color:#ffb3bf}
+
+  /* code block / terminal */
+  .term{
+    background:var(--bg-code);border:1px solid var(--border-soft);border-radius:8px;
+    margin-top:11px;overflow:hidden
+  }
+  .term-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border-soft)}
+  .term-bar i{width:9px;height:9px;border-radius:50%;display:block}
+  .term-bar i:nth-child(1){background:#ff5f57}
+  .term-bar i:nth-child(2){background:#febc2e}
+  .term-bar i:nth-child(3){background:#28c840}
+  .term-bar span{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-faint);margin-left:6px}
+  .term pre{padding:13px 15px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--text-dim)}
+  .term pre .p{color:var(--green)}     /* prompt $ */
+  .term pre .c{color:var(--text)}      /* command */
+  .term pre .o{color:var(--text-faint)} /* output */
+  .term pre .cm{color:var(--text-faint);font-style:italic} /* comment */
+
+  /* callout */
+  .callout{
+    background:linear-gradient(90deg,rgba(244,183,64,.07),transparent);
+    border:1px solid var(--border-soft);border-left:3px solid var(--accent);
+    border-radius:8px;padding:14px 16px;margin:18px 0;font-size:14px;color:var(--text-dim)
+  }
+  .callout b{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:5px}
+  .callout.tip{border-left-color:var(--green)}
+  .callout.tip b{color:var(--green)}
+
+  /* diagram frame */
+  .figure{background:var(--bg-raised);border:1px solid var(--border-soft);border-radius:var(--radius);padding:22px;margin:20px 0;overflow-x:auto}
+  .figure figcaption{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);text-align:center;margin-top:14px;letter-spacing:.5px}
+  .figure svg{display:block;margin:0 auto;max-width:100%;height:auto}
+
+  /* glossary */
+  .gloss{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden}
+  .gloss .row{display:grid;grid-template-columns:180px 1fr;gap:0;border-bottom:1px solid var(--border-soft)}
+  .gloss .row:last-child{border-bottom:none}
+  .gloss dt{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);padding:13px 16px;background:var(--bg-code);border-right:1px solid var(--border-soft)}
+  .gloss dd{padding:13px 16px;color:var(--text-dim);font-size:14px}
+
+  .no-results{display:none;text-align:center;padding:60px 20px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;font-size:13px}
+  .no-results.show{display:block}
+  section.hidden,.cmd.hidden{display:none}
+
+  /* mobile */
+  .menu-btn{display:none}
+  @media (max-width:880px){
+    .sidebar{
+      position:fixed;left:0;top:0;z-index:50;transform:translateX(-100%);
+      transition:transform .22s ease;box-shadow:0 0 60px rgba(0,0,0,.6)
+    }
+    .sidebar.open{transform:translateX(0)}
+    .menu-btn{
+      display:flex;align-items:center;gap:8px;position:fixed;top:14px;left:14px;z-index:40;
+      background:var(--bg-raised);border:1px solid var(--border);color:var(--text);
+      font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 13px;border-radius:8px;cursor:pointer
+    }
+    .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:45}
+    .scrim.show{display:block}
+    .wrap{padding:0 18px 100px}
+    .searchbar{top:0;padding-top:60px}
+    .gloss .row{grid-template-columns:1fr}
+    .gloss dt{border-right:none;border-bottom:1px solid var(--border-soft)}
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Open navigation">☰ Sections</button>
+<div class="scrim" id="scrim"></div>
+
+<div class="shell">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <svg class="glyph" width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <rect x="1" y="1" width="32" height="32" rx="9" fill="#161d2e" stroke="#243049"/>
+        <circle cx="11" cy="11" r="3" fill="#f4b740"/>
+        <circle cx="11" cy="23" r="3" fill="#4cc3ff"/>
+        <circle cx="23" cy="17" r="3" fill="#bb8cff"/>
+        <path d="M11 14v6M11 20q0 -3 12 -3" stroke="#5f6e8c" stroke-width="1.6" fill="none"/>
+      </svg>
+      <div>
+        <h1>Git &amp; GitHub</h1>
+        <span>Field Manual</span>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Foundations</div>
+      <a href="#mental-model"><span class="dot"></span>The mental model</a>
+      <a href="#setup"><span class="dot"></span>Setup &amp; identity</a>
+      <a href="#start"><span class="dot"></span>Start a project</a>
+      <div class="nav-label">Everyday</div>
+      <a href="#cycle"><span class="dot"></span>The daily cycle ★</a>
+      <a href="#branches"><span class="dot"></span>Branches &amp; merging</a>
+      <a href="#remotes"><span class="dot"></span>Remotes &amp; sync</a>
+      <div class="nav-label">Recover &amp; inspect</div>
+      <a href="#undo"><span class="dot"></span>Undoing mistakes</a>
+      <a href="#history"><span class="dot"></span>Inspecting history</a>
+      <a href="#stash"><span class="dot"></span>Stashing</a>
+      <div class="nav-label">GitHub &amp; teamwork</div>
+      <a href="#github"><span class="dot"></span>Forks &amp; pull requests</a>
+      <a href="#ignore"><span class="dot"></span>.gitignore</a>
+      <a href="#recipes"><span class="dot"></span>Common recipes</a>
+      <div class="nav-label">Reference</div>
+      <a href="#cheatsheet"><span class="dot"></span>Cheat sheet</a>
+      <a href="#glossary"><span class="dot"></span>Glossary</a>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="wrap">
+
+      <!-- SEARCH -->
+      <div class="searchbar">
+        <div class="search-inner">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#94a2c0" stroke-width="1.6"/><path d="M11 11l3 3" stroke="#94a2c0" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <input id="search" type="text" placeholder="Search a command or topic…  e.g.  commit, undo, branch, push" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="search-meta" id="searchMeta">Type to filter every command on the page. Press <kbd>Esc</kbd> to clear.</div>
+      </div>
+
+      <!-- HERO -->
+      <header class="hero">
+        <div class="kicker">Beginner → confident · everything in one page</div>
+        <h2>The whole of Git, laid out so you can <em>find it fast</em>.</h2>
+        <p>Git tracks the history of your files. GitHub is the website that stores a copy online so you can back it up and collaborate. This manual walks the path a real project takes — set up, save work, branch, sync, and recover when things break — with the most-used commands flagged and the dangerous ones clearly marked.</p>
+        <div class="reading">
+          <div>★ <b>= you'll use daily</b></div>
+          <div>⚠ <b>= can delete work</b></div>
+          <div>Search box <b>jumps to any command</b></div>
+        </div>
+      </header>
+
+      <!-- ============ MENTAL MODEL ============ -->
+      <section id="mental-model" data-keywords="model concept staging area working directory repository repo remote how git works overview">
+        <div class="sec-head"><h3><span class="hash">#</span> The mental model</h3><span class="num">01</span></div>
+        <p class="sec-intro">Before any command makes sense, you need the picture. Your work moves through <strong>four places</strong>. Almost every command you'll ever run just moves a file from one box to the next. Learn this diagram and 80% of Git stops being mysterious.</p>
+
+        <figure class="figure">
+          <svg viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: files move from working directory to staging area to local repository to remote on GitHub">
+            <defs>
+              <marker id="ar" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f4b740"/></marker>
+              <marker id="arb" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4cc3ff"/></marker>
+            </defs>
+            <!-- boxes -->
+            <g font-family="JetBrains Mono, monospace">
+              <rect x="8" y="60" width="150" height="74" rx="9" fill="#161d2e" stroke="#243049"/>
+              <text x="83" y="92" text-anchor="middle" fill="#e7ecf7" font-size="12.5" font-weight="700">Working</text>
+              <text x="83" y="108" text-anchor="middle" fill="#e7ecf7" font-size="12.5" font-weight="700">Directory</text>
+              <text x="83" y="124" text-anchor="middle" fill="#5f6e8c" font-size="9.5">your files</text>
+
+              <rect x="206" y="60" width="150" height="74" rx="9" fill="#161d2e" stroke="#243049"/>
+              <text x="281" y="92" text-anchor="middle" fill="#e7ecf7" font-size="12.5" font-weight="700">Staging</text>
+              <text x="281" y="108" text-anchor="middle" fill="#e7ecf7" font-size="12.5" font-weight="700">Area</text>
+              <text x="281" y="124" text-anchor="middle" fill="#5f6e8c" font-size="9.5">next snapshot</text>
+
+              <rect x="404" y="60" width="150" height="74" rx="9" fill="#161d2e" stroke="#243049"/>
+              <text x="479" y="92" text-anchor="middle" fill="#e7ecf7" font-size="12.5" font-weight="700">Local</text>
+              <text x="479" y="108" text-anchor="middle" fill="#e7ecf7" font-size="12.5" font-weight="700">Repository</text>
+              <text x="479" y="124" text-anchor="middle" fill="#5f6e8c" font-size="9.5">your history</text>
+
+              <rect x="602" y="60" width="150" height="74" rx="9" fill="#161d2e" stroke="#4cc3ff" stroke-opacity=".5"/>
+              <text x="677" y="92" text-anchor="middle" fill="#4cc3ff" font-size="12.5" font-weight="700">Remote</text>
+              <text x="677" y="108" text-anchor="middle" fill="#4cc3ff" font-size="12.5" font-weight="700">(GitHub)</text>
+              <text x="677" y="124" text-anchor="middle" fill="#5f6e8c" font-size="9.5">the cloud</text>
+            </g>
+            <!-- forward arrows -->
+            <g font-family="JetBrains Mono, monospace" font-size="10.5">
+              <line x1="160" y1="97" x2="202" y2="97" stroke="#f4b740" stroke-width="1.6" marker-end="url(#ar)"/>
+              <text x="181" y="50" text-anchor="middle" fill="#f4b740">git add</text>
+              <line x1="358" y1="97" x2="400" y2="97" stroke="#f4b740" stroke-width="1.6" marker-end="url(#ar)"/>
+              <text x="379" y="50" text-anchor="middle" fill="#f4b740">git commit</text>
+              <line x1="556" y1="97" x2="598" y2="97" stroke="#4cc3ff" stroke-width="1.6" marker-end="url(#arb)"/>
+              <text x="577" y="50" text-anchor="middle" fill="#4cc3ff">git push</text>
+            </g>
+            <!-- return arrow -->
+            <g font-family="JetBrains Mono, monospace" font-size="10.5">
+              <path d="M677 138 v40 H83 v-40" fill="none" stroke="#bb8cff" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+              <text x="380" y="200" text-anchor="middle" fill="#bb8cff">git pull / git clone  ·  brings GitHub's copy back down to you</text>
+            </g>
+          </svg>
+          <figcaption>Files travel left → right with add, commit, push — and come back with pull.</figcaption>
+        </figure>
+
+        <div class="callout"><b>The one sentence to remember</b><strong style="color:var(--text)">add</strong> picks which changes go in the next save, <strong style="color:var(--text)">commit</strong> saves them into your history with a message, and <strong style="color:var(--text)">push</strong> uploads that history to GitHub.</div>
+      </section>
+
+      <!-- ============ SETUP ============ -->
+      <section id="setup" data-keywords="install setup config identity name email ssh https token authentication credentials first time">
+        <div class="sec-head"><h3><span class="hash">#</span> Setup &amp; identity</h3><span class="num">02</span></div>
+        <p class="sec-intro">Do this <strong>once per computer</strong>. Git stamps every save with your name and email, so it needs to know who you are. You also need a way to prove your identity to GitHub when uploading.</p>
+
+        <div class="cmd" data-keywords="version check installed git --version">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> --version</div>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Confirms Git is installed. No output means you need to install it from <a href="https://git-scm.com" target="_blank" rel="noopener">git-scm.com</a> (Windows/Mac) or via your package manager.</div>
+        </div>
+
+        <div class="cmd" data-keywords="config user name set identity">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> config --global user.name <span class="arg">"Your Name"</span></div>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Sets the name attached to your commits. <code>--global</code> means "for every project on this machine."</div>
+        </div>
+
+        <div class="cmd" data-keywords="config user email set identity">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> config --global user.email <span class="arg">"you@example.com"</span></div>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Use the same email as your GitHub account so your commits link to your profile.</div>
+        </div>
+
+        <div class="cmd" data-keywords="config list check settings verify">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> config --list</div>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Shows all your current settings, so you can check the name and email actually saved.</div>
+        </div>
+
+        <div class="cmd" data-keywords="default branch main master init defaultBranch">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> config --global init.defaultBranch <span class="arg">main</span></div>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Makes new repositories start on a branch called <code>main</code> (the modern default GitHub uses).</div>
+        </div>
+
+        <div class="callout"><b>Authentication — read this once</b>GitHub no longer accepts your account password from the command line. When you <code style="color:var(--accent)">push</code> over HTTPS it asks for a <strong style="color:var(--text)">Personal Access Token</strong> instead of a password — create one under GitHub → Settings → Developer settings → Tokens. The easiest path for beginners is to install <strong style="color:var(--text)">GitHub CLI</strong> (<code>gh auth login</code>) or GitHub Desktop, which handles login for you.</div>
+      </section>
+
+      <!-- ============ START ============ -->
+      <section id="start" data-keywords="init clone new project download repository create start existing">
+        <div class="sec-head"><h3><span class="hash">#</span> Start a project</h3><span class="num">03</span></div>
+        <p class="sec-intro">There are exactly two ways to begin: <strong>init</strong> turns a folder you already have into a Git project, and <strong>clone</strong> downloads an existing project from GitHub.</p>
+
+        <div class="cmd" data-keywords="init initialize new repository create local">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> init</div>
+            <span class="badge most">★ key</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Run inside a folder to start tracking it. Creates a hidden <code>.git</code> folder that holds all history. Do this when the project lives only on your computer so far.</div>
+        </div>
+
+        <div class="cmd" data-keywords="clone download copy repository github existing url">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> clone <span class="arg">https://github.com/user/repo.git</span></div>
+            <span class="badge most">★ key</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Downloads a full copy of a GitHub project — code <em>and</em> its entire history — into a new folder. This is how you grab someone else's (or your own) existing repo.</div>
+          <div class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>terminal</span></div>
+            <pre><span class="p">$</span> <span class="c">git clone https://github.com/octocat/Hello-World.git</span>
+<span class="o">Cloning into 'Hello-World'...</span>
+<span class="o">remote: Enumerating objects: 7, done.</span>
+<span class="p">$</span> <span class="c">cd Hello-World</span>   <span class="cm"># now you're inside the project</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DAILY CYCLE ============ -->
+      <section id="cycle" data-keywords="status add commit push pull daily cycle save everyday core most used workflow">
+        <div class="sec-head"><h3><span class="hash">#</span> The daily cycle ★</h3><span class="num">04</span></div>
+        <p class="sec-intro">This is the loop you'll repeat hundreds of times: <strong>change files → check → stage → commit → push</strong>. If you only memorise one section, make it this one.</p>
+
+        <div class="cmd" data-keywords="status check changes modified untracked what changed">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> status</div>
+            <span class="badge most">★ most used</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Your compass. Shows what's changed, what's staged, and what branch you're on. Run it constantly — there's no harm, and it always tells you the next step.</div>
+        </div>
+
+        <div class="cmd" data-keywords="add stage staging single file all">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> add <span class="arg">filename.txt</span></div>
+            <span class="badge most">★ key</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Stages one file — marks it to be included in the next commit. Think of it as putting an item in the box before sealing it.</div>
+        </div>
+
+        <div class="cmd" data-keywords="add all everything stage period dot">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> add <span class="opt">.</span></div>
+            <span class="badge most">★ most used</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Stages <em>every</em> changed file in the folder at once. The everyday shortcut. (The <code>.</code> means "here and below.")</div>
+        </div>
+
+        <div class="cmd" data-keywords="commit save message snapshot record">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> commit <span class="opt">-m</span> <span class="arg">"Describe what you changed"</span></div>
+            <span class="badge most">★ most used</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Permanently saves the staged changes into your history with a short message. The message is a note to future-you about <em>why</em> the change happened.</div>
+          <div class="cmd-note">Good messages are short and present-tense: <code style="background:var(--bg-code);padding:1px 5px;border-radius:3px">"Add login button"</code>, not <code style="background:var(--bg-code);padding:1px 5px;border-radius:3px">"changed stuff"</code>.</div>
+        </div>
+
+        <div class="cmd" data-keywords="commit add together shortcut am tracked">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> commit <span class="opt">-am</span> <span class="arg">"message"</span></div>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Stages <em>and</em> commits all already-tracked files in one step. Skips <code>git add</code> — but only works for files Git already knows about (not brand-new files).</div>
+        </div>
+
+        <div class="cmd" data-keywords="push upload send github remote publish">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> push</div>
+            <span class="badge most">★ most used</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Uploads your committed history to GitHub. Until you push, your work lives only on your machine.</div>
+        </div>
+
+        <div class="cmd" data-keywords="push first time upstream set branch new">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> push <span class="opt">-u</span> origin <span class="arg">main</span></div>
+            <span class="badge safe">first push</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">The <em>first</em> push of a new branch. <code>-u</code> links your local branch to GitHub so that afterwards a plain <code>git push</code> just works.</div>
+        </div>
+
+        <div class="cmd" data-keywords="pull download update fetch merge latest sync get">
+          <div class="cmd-top">
+            <div class="cmd-line"><span class="tok">git</span> pull</div>
+            <span class="badge most">★ most used</span>
+            <button class="copy">copy</button>
+          </div>
+          <div class="cmd-desc">Downloads and merges the latest changes from GitHub into your branch. Run it before you start working, especially on a shared project, so you're up to date.</div>
+        </div>
+
+        <div class="callout tip"><b>The full loop in practice</b>
+          <div class="term" style="margin-top:8px">
+            <div class="term-bar"><i></i><i></i><i></i><span>a normal work session</span></div>
+            <pre><span class="p">$</span> <span class="c">git pull</span>                       <span class="cm"># 1. get latest</span>
+<span class="cm"># ... you edit files ...</span>
+<span class="p">$</span> <span class="c">git status</span>                     <span class="cm"># 2. see what changed</span>
+<span class="p">$</span> <span class="c">git add .</span>                      <span class="cm"># 3. stage it all</span>
+<span class="p">$</span> <span class="c">git commit -m "Add nav bar"</span>    <span class="cm"># 4. save with a message</span>
+<span class="p">$</span> <span class="c">git push</span>                       <span class="cm"># 5. upload to GitHub</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ BRANCHES ============ -->
+      <section id="branches" data-keywords="branch checkout switch merge create delete feature parallel">
+        <div class="sec-head"><h3><span class="hash">#</span> Branches &amp; merging</h3><span class="num">05</span></div>
+        <p class="sec-intro">A <strong>branch</strong> is a parallel copy of your project where you can experiment without touching the main version. You build a feature on its own branch, then <strong>merge</strong> it back into <code>main</code> when it's ready.</p>
+
+        <figure class="figure">
+          <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: a feature branch splitting from main and merging back">
+            <defs><marker id="m2" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L5,3 L0,6 Z" fill="#5f6e8c"/></marker></defs>
+            <!-- main line -->
+            <line x1="40" y1="120" x2="660" y2="120" stroke="#243049" stroke-width="2"/>
+            <text x="40" y="150" fill="#4cc3ff" font-family="JetBrains Mono, monospace" font-size="11">main</text>
+            <!-- branch line -->
+            <path d="M180 120 C220 60, 260 60, 300 60 H460 C500 60, 540 60, 580 120" fill="none" stroke="#bb8cff" stroke-width="2"/>
+            <text x="300" y="48" fill="#bb8cff" font-family="JetBrains Mono, monospace" font-size="11">feature/login</text>
+            <!-- main commits -->
+            <g><circle cx="100" cy="120" r="7" fill="#161d2e" stroke="#4cc3ff" stroke-width="2"/><circle cx="180" cy="120" r="7" fill="#161d2e" stroke="#4cc3ff" stroke-width="2"/><circle cx="580" cy="120" r="9" fill="#4cc3ff"/></g>
+            <!-- branch commits -->
+            <g><circle cx="320" cy="60" r="7" fill="#161d2e" stroke="#bb8cff" stroke-width="2"/><circle cx="440" cy="60" r="7" fill="#161d2e" stroke="#bb8cff" stroke-width="2"/></g>
+            <text x="180" y="105" fill="#5f6e8c" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">branch</text>
+            <text x="580" y="148" fill="#52e09b" font-family="JetBrains Mono, monospace" font-size="9" text-anchor="middle">merge</text>
+          </svg>
+          <figcaption>Split off main, do your work in isolation, then merge it back.</figcaption>
+        </figure>
+
+        <div class="cmd" data-keywords="branch list show all current">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> branch</div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Lists all branches; a <code>*</code> marks the one you're currently on.</div>
+        </div>
+
+        <div class="cmd" data-keywords="switch create new branch checkout -b make">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> switch <span class="opt">-c</span> <span class="arg">feature-name</span></div><span class="badge most">★ key</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Creates a new branch <em>and</em> moves you onto it. The modern, clearer replacement for <code>git checkout -b</code>.</div>
+        </div>
+
+        <div class="cmd" data-keywords="switch change move branch checkout existing">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> switch <span class="arg">main</span></div><span class="badge most">★ key</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Moves you to an existing branch. Your files instantly change to match that branch.</div>
+        </div>
+
+        <div class="cmd" data-keywords="checkout switch branch old syntax classic">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> checkout <span class="arg">branch-name</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">The older command that also switches branches. You'll see it everywhere online; <code>switch</code> does the same job more safely.</div>
+        </div>
+
+        <div class="cmd" data-keywords="merge combine bring changes into main">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> merge <span class="arg">feature-name</span></div><span class="badge most">★ key</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Brings the named branch's changes <em>into the branch you're on now</em>. So to merge a feature into main: switch to main first, then merge.</div>
+          <div class="cmd-note">Order matters: <code style="background:var(--bg-code);padding:1px 5px;border-radius:3px">git switch main</code> → then → <code style="background:var(--bg-code);padding:1px 5px;border-radius:3px">git merge feature-name</code>.</div>
+        </div>
+
+        <div class="cmd danger" data-keywords="delete branch remove -d -D destructive">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> branch <span class="opt">-d</span> <span class="arg">feature-name</span></div><span class="badge danger">⚠ deletes</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Deletes a branch after it's merged. Use a capital <code>-D</code> to force-delete an unmerged branch.</div>
+          <div class="cmd-note warn">Capital <code>-D</code> throws away unmerged work permanently. Be sure it's merged first.</div>
+        </div>
+      </section>
+
+      <!-- ============ REMOTES ============ -->
+      <section id="remotes" data-keywords="remote origin fetch pull push upstream connect github url tracking">
+        <div class="sec-head"><h3><span class="hash">#</span> Remotes &amp; sync</h3><span class="num">06</span></div>
+        <p class="sec-intro">A <strong>remote</strong> is just a nickname for a copy of your repo that lives elsewhere — almost always on GitHub. The default nickname is <code>origin</code>. These commands connect your local project to GitHub and keep the two in sync.</p>
+
+        <div class="cmd" data-keywords="remote add origin connect link github url">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> remote add origin <span class="arg">https://github.com/you/repo.git</span></div><span class="badge most">★ key</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Links a local project (made with <code>git init</code>) to an empty GitHub repo. Run this once, then push. <code>origin</code> becomes the name you push to.</div>
+        </div>
+
+        <div class="cmd" data-keywords="remote -v list show url verbose check">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> remote <span class="opt">-v</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Shows which GitHub URL your project is connected to. Handy when a push goes to the wrong place.</div>
+        </div>
+
+        <div class="cmd" data-keywords="fetch download check no merge updates safe">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> fetch</div><span class="badge safe">safe</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Downloads the latest changes from GitHub but <em>doesn't</em> touch your files yet. Lets you look before you merge. (A <code>pull</code> is really a <code>fetch</code> + <code>merge</code>.)</div>
+        </div>
+
+        <div class="cmd" data-keywords="push upstream tracking set new branch first time">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> push <span class="opt">-u</span> origin <span class="arg">branch-name</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Publishes a new local branch to GitHub for the first time and remembers the link, so later you just type <code>git push</code>.</div>
+        </div>
+      </section>
+
+      <!-- ============ UNDO ============ -->
+      <section id="undo" data-keywords="undo restore reset revert discard mistake fix unstage rollback amend">
+        <div class="sec-head"><h3><span class="hash">#</span> Undoing mistakes</h3><span class="num">07</span></div>
+        <p class="sec-intro">Everyone breaks things. The trick is knowing <strong>which</strong> undo to reach for. They range from totally safe to permanently destructive — the ⚠ badges below tell you which is which.</p>
+
+        <div class="cmd" data-keywords="restore discard unsaved changes file undo edits working directory">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> restore <span class="arg">filename.txt</span></div><span class="badge danger">⚠ loses edits</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Throws away your <em>uncommitted</em> changes to a file, resetting it to the last commit. Useful when an experiment went wrong — but the edits are gone for good.</div>
+        </div>
+
+        <div class="cmd" data-keywords="restore staged unstage remove from staging area undo add">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> restore <span class="opt">--staged</span> <span class="arg">filename.txt</span></div><span class="badge safe">safe</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Un-stages a file you added by mistake. Your edits stay; it just removes the file from the next commit. The opposite of <code>git add</code>.</div>
+        </div>
+
+        <div class="cmd" data-keywords="commit amend fix last message change redo">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> commit <span class="opt">--amend</span> <span class="opt">-m</span> <span class="arg">"Corrected message"</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Rewrites your <em>most recent</em> commit — to fix a typo in the message or add a forgotten file. Only do this if you haven't pushed yet.</div>
+          <div class="cmd-note">Already pushed? Amending changes history and will conflict with GitHub. Prefer a new commit instead.</div>
+        </div>
+
+        <div class="cmd" data-keywords="revert undo commit safe new opposite published shared">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> revert <span class="arg">commit-hash</span></div><span class="badge safe">safe to share</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">The <em>safe</em> undo for work already on GitHub. It creates a brand-new commit that cancels out an old one, leaving history intact. Best choice on shared projects.</div>
+        </div>
+
+        <div class="cmd danger" data-keywords="reset soft mixed move commit keep changes undo">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> reset <span class="opt">--soft</span> <span class="arg">HEAD~1</span></div><span class="badge danger">⚠ rewrites</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Undoes the last commit but <em>keeps</em> your changes staged, as if you never committed. Great for "oops, I committed too early." <code>HEAD~1</code> means "one commit back."</div>
+        </div>
+
+        <div class="cmd danger" data-keywords="reset hard delete destroy commits changes nuke dangerous wipe">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> reset <span class="opt">--hard</span> <span class="arg">HEAD~1</span></div><span class="badge danger">⚠⚠ destroys work</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Deletes the last commit <em>and</em> every change in it — files and all. There's usually no getting it back.</div>
+          <div class="cmd-note warn">The most dangerous everyday command. Never run <code>reset --hard</code> unless you're certain you want those changes gone forever.</div>
+        </div>
+      </section>
+
+      <!-- ============ HISTORY ============ -->
+      <section id="history" data-keywords="log diff show blame history inspect view commits changes who when">
+        <div class="sec-head"><h3><span class="hash">#</span> Inspecting history</h3><span class="num">08</span></div>
+        <p class="sec-intro">Git remembers everything. These read-only commands let you look back — what changed, when, and who did it. None of them alter anything, so explore freely.</p>
+
+        <div class="cmd" data-keywords="log history commits list view past">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> log</div><span class="badge most">★ key</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Lists past commits — newest first — with author, date, and message. Press <code>q</code> to quit the viewer.</div>
+        </div>
+
+        <div class="cmd" data-keywords="log oneline pretty graph compact short summary">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> log <span class="opt">--oneline --graph</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">A compact, one-line-per-commit view with a visual branch graph. Far easier to scan than the full log.</div>
+        </div>
+
+        <div class="cmd" data-keywords="diff changes compare unstaged what changed lines">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> diff</div><span class="badge most">★ key</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Shows the exact lines you've changed but not yet staged. Green is added, red is removed. Run it before committing to review your work.</div>
+        </div>
+
+        <div class="cmd" data-keywords="show commit detail inspect specific contents">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> show <span class="arg">commit-hash</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Displays everything about one specific commit — its message and all the lines it changed.</div>
+        </div>
+
+        <div class="cmd" data-keywords="blame who wrote line author history file responsibility">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> blame <span class="arg">filename.txt</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Shows who last changed each line of a file and in which commit. Less about blame, more about "why is this line here?"</div>
+        </div>
+      </section>
+
+      <!-- ============ STASH ============ -->
+      <section id="stash" data-keywords="stash save temporary set aside shelf pop switch branch interrupt">
+        <div class="sec-head"><h3><span class="hash">#</span> Stashing</h3><span class="num">09</span></div>
+        <p class="sec-intro">You're mid-change and suddenly need to switch branches, but you're not ready to commit. <strong>Stash</strong> tucks your unfinished work onto a shelf so your folder goes clean — then you bring it back later.</p>
+
+        <div class="cmd" data-keywords="stash save shelf put away temporary">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> stash</div><span class="badge safe">safe</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Saves all uncommitted changes onto a hidden shelf and resets your folder to clean. Nothing is lost.</div>
+        </div>
+
+        <div class="cmd" data-keywords="stash pop restore bring back apply">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> stash pop</div><span class="badge safe">safe</span><button class="copy">copy</button></div>
+          <div class="cmd-desc">Brings your shelved changes back and removes them from the shelf. The usual way to resume.</div>
+        </div>
+
+        <div class="cmd" data-keywords="stash list show all shelved">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> stash list</div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Shows everything currently on the shelf, in case you've stashed more than once.</div>
+        </div>
+      </section>
+
+      <!-- ============ GITHUB ============ -->
+      <section id="github" data-keywords="fork pull request pr collaborate clone upstream contribute open source github website">
+        <div class="sec-head"><h3><span class="hash">#</span> Forks &amp; pull requests</h3><span class="num">10</span></div>
+        <p class="sec-intro">This is the GitHub-the-website part. A <strong>fork</strong> is your personal copy of someone else's repo. A <strong>pull request (PR)</strong> is how you propose your changes to be added back into the original — the heart of collaboration and open source.</p>
+
+        <figure class="figure">
+          <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: fork a repo, clone it, push changes, then open a pull request back to the original">
+            <g font-family="JetBrains Mono, monospace" font-size="11">
+              <rect x="270" y="20" width="160" height="48" rx="9" fill="#161d2e" stroke="#4cc3ff" stroke-opacity=".6"/>
+              <text x="350" y="40" text-anchor="middle" fill="#4cc3ff" font-size="11" font-weight="700">Original repo</text>
+              <text x="350" y="56" text-anchor="middle" fill="#5f6e8c" font-size="9">on GitHub</text>
+
+              <rect x="270" y="135" width="160" height="48" rx="9" fill="#161d2e" stroke="#bb8cff" stroke-opacity=".6"/>
+              <text x="350" y="155" text-anchor="middle" fill="#bb8cff" font-size="11" font-weight="700">Your fork</text>
+              <text x="350" y="171" text-anchor="middle" fill="#5f6e8c" font-size="9">your GitHub copy</text>
+
+              <rect x="500" y="135" width="160" height="48" rx="9" fill="#161d2e" stroke="#243049"/>
+              <text x="580" y="155" text-anchor="middle" fill="#e7ecf7" font-size="11" font-weight="700">Your computer</text>
+              <text x="580" y="171" text-anchor="middle" fill="#5f6e8c" font-size="9">local clone</text>
+
+              <path d="M270 44 H120 V159 H266" fill="none" stroke="#bb8cff" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <text x="120" y="100" text-anchor="middle" fill="#bb8cff" font-size="10">1. fork</text>
+
+              <line x1="500" y1="159" x2="434" y2="159" stroke="#5f6e8c" stroke-width="1.5"/>
+              <text x="467" y="151" text-anchor="middle" fill="#5f6e8c" font-size="9.5">2. clone</text>
+              <text x="467" y="178" text-anchor="middle" fill="#52e09b" font-size="9.5">3. push</text>
+
+              <path d="M350 135 V72" fill="none" stroke="#52e09b" stroke-width="1.5" marker-end="url(#ar)"/>
+              <text x="395" y="105" text-anchor="middle" fill="#52e09b" font-size="10">4. pull request</text>
+            </g>
+          </svg>
+          <figcaption>Fork → clone → push to your fork → open a pull request to the original.</figcaption>
+        </figure>
+
+        <div class="callout"><b>Fork vs Clone — the common confusion</b><strong style="color:var(--text)">Fork</strong> happens on the GitHub website (a button) and makes a copy under <em>your</em> account. <strong style="color:var(--text)">Clone</strong> happens on your computer and downloads a repo locally. You usually fork first, then clone your fork.</div>
+
+        <div class="cmd" data-keywords="pull request pr open propose merge contribute">
+          <div class="cmd-top"><div class="cmd-line"><span class="pre"># on github.com:</span> open a <span class="tok">Pull Request</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">After pushing your branch, GitHub shows a "Compare &amp; pull request" button. A PR is a request to merge your changes, where others can review and comment first.</div>
+        </div>
+
+        <div class="cmd" data-keywords="upstream remote add original sync fork updated">
+          <div class="cmd-top"><div class="cmd-line"><span class="tok">git</span> remote add upstream <span class="arg">https://github.com/original/repo.git</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Adds a second remote pointing at the <em>original</em> project (your fork's source). Lets you pull in their latest updates with <code>git pull upstream main</code>.</div>
+        </div>
+
+        <div class="callout tip"><b>Try GitHub CLI</b>Once installed, <code style="color:var(--green)">gh repo clone</code>, <code style="color:var(--green)">gh pr create</code>, and <code style="color:var(--green)">gh pr list</code> let you do GitHub actions without leaving the terminal — and <code style="color:var(--green)">gh auth login</code> solves the password/token headache in one step.</div>
+      </section>
+
+      <!-- ============ GITIGNORE ============ -->
+      <section id="ignore" data-keywords="gitignore ignore exclude files node_modules env secrets untracked dont track">
+        <div class="sec-head"><h3><span class="hash">#</span> .gitignore</h3><span class="num">11</span></div>
+        <p class="sec-intro">Some files should <strong>never</strong> go to GitHub — passwords, huge dependency folders, machine-specific junk. A <code>.gitignore</code> file lists patterns Git should pretend don't exist.</p>
+
+        <div class="cmd" data-keywords="gitignore create file new ignore patterns">
+          <div class="cmd-top"><div class="cmd-line"><span class="pre"># create a file named</span> .gitignore <span class="pre">in your project root</span></div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Put one pattern per line. Anything matching is left out of every commit. Create it <em>early</em> — once a file is committed, ignoring it later is harder.</div>
+          <div class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>.gitignore</span></div>
+            <pre><span class="cm"># dependencies — never upload these</span>
+<span class="c">node_modules/</span>
+<span class="c">venv/</span>
+
+<span class="cm"># secrets &amp; environment</span>
+<span class="c">.env</span>
+<span class="c">*.key</span>
+
+<span class="cm"># OS &amp; editor noise</span>
+<span class="c">.DS_Store</span>
+<span class="c">.vscode/</span></pre>
+          </div>
+        </div>
+
+        <div class="callout"><b>Why it matters</b>Committing a <code style="color:var(--accent)">.env</code> file with API keys to a public repo is one of the most common beginner mistakes — bots scan GitHub for leaked keys within minutes. Add it to <code style="color:var(--accent)">.gitignore</code> before your first commit.</div>
+      </section>
+
+      <!-- ============ RECIPES ============ -->
+      <section id="recipes" data-keywords="recipes how to common scenarios fix conflict sync mistake workflow examples merge conflict">
+        <div class="sec-head"><h3><span class="hash">#</span> Common recipes</h3><span class="num">12</span></div>
+        <p class="sec-intro">Real situations you'll hit, with the exact steps. Search this section by the problem you're facing.</p>
+
+        <div class="cmd" data-keywords="merge conflict resolve fix both changed same file accept">
+          <div class="cmd-top"><div class="cmd-line"><span class="pre"># Recipe:</span> resolve a merge conflict</div><button class="copy">copy</button></div>
+          <div class="cmd-desc">When two people change the same lines, Git pauses and marks the clash with <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> markers. Open the file, pick the correct version, delete the markers, then:</div>
+          <div class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>after editing the file</span></div>
+            <pre><span class="p">$</span> <span class="c">git add the-conflicted-file.txt</span>
+<span class="p">$</span> <span class="c">git commit</span>                  <span class="cm"># finishes the merge</span></pre>
+          </div>
+        </div>
+
+        <div class="cmd" data-keywords="oops wrong branch committed move commit to correct branch mistake">
+          <div class="cmd-top"><div class="cmd-line"><span class="pre"># Recipe:</span> I committed to the wrong branch</div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Undo the commit (keeping changes), switch to the right branch, and re-commit there.</div>
+          <div class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>fix wrong-branch commit</span></div>
+            <pre><span class="p">$</span> <span class="c">git reset --soft HEAD~1</span>      <span class="cm"># undo commit, keep changes</span>
+<span class="p">$</span> <span class="c">git switch correct-branch</span>
+<span class="p">$</span> <span class="c">git commit -m "your message"</span></pre>
+          </div>
+        </div>
+
+        <div class="cmd" data-keywords="push rejected error pull first behind remote update conflict">
+          <div class="cmd-top"><div class="cmd-line"><span class="pre"># Recipe:</span> my push was rejected</div><button class="copy">copy</button></div>
+          <div class="cmd-desc">It means GitHub has commits you don't. Someone pushed before you. Pull their work first, then push again.</div>
+          <div class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>push rejected fix</span></div>
+            <pre><span class="p">$</span> <span class="c">git pull</span>        <span class="cm"># merge their changes in</span>
+<span class="p">$</span> <span class="c">git push</span>        <span class="cm"># now it works</span></pre>
+          </div>
+        </div>
+
+        <div class="cmd" data-keywords="sync fork update upstream original latest behind">
+          <div class="cmd-top"><div class="cmd-line"><span class="pre"># Recipe:</span> update my fork from the original</div><button class="copy">copy</button></div>
+          <div class="cmd-desc">Pull the original project's latest commits into your fork (assumes you added an <code>upstream</code> remote).</div>
+          <div class="term">
+            <div class="term-bar"><i></i><i></i><i></i><span>sync a fork</span></div>
+            <pre><span class="p">$</span> <span class="c">git fetch upstream</span>
+<span class="p">$</span> <span class="c">git switch main</span>
+<span class="p">$</span> <span class="c">git merge upstream/main</span>
+<span class="p">$</span> <span class="c">git push</span>            <span class="cm"># update your fork on GitHub</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CHEAT SHEET ============ -->
+      <section id="cheatsheet" data-keywords="cheat sheet summary quick reference most used commands list top all">
+        <div class="sec-head"><h3><span class="hash">#</span> Cheat sheet</h3><span class="num">13</span></div>
+        <p class="sec-intro">The commands you'll actually reach for, in the order you'll use them. Print this part, pin it near your desk.</p>
+
+        <div class="term">
+          <div class="term-bar"><i></i><i></i><i></i><span>the 90% you'll ever need</span></div>
+          <pre><span class="cm"># START</span>
+<span class="c">git clone &lt;url&gt;</span>          <span class="o">download a repo</span>
+<span class="c">git init</span>                <span class="o">start tracking this folder</span>
+
+<span class="cm"># THE DAILY LOOP ★</span>
+<span class="c">git status</span>              <span class="o">what's changed?</span>
+<span class="c">git add .</span>                <span class="o">stage everything</span>
+<span class="c">git commit -m "msg"</span>     <span class="o">save with a message</span>
+<span class="c">git push</span>                <span class="o">upload to GitHub</span>
+<span class="c">git pull</span>                <span class="o">download latest</span>
+
+<span class="cm"># BRANCHES</span>
+<span class="c">git switch -c &lt;name&gt;</span>     <span class="o">create + go to new branch</span>
+<span class="c">git switch main</span>         <span class="o">go back to main</span>
+<span class="c">git merge &lt;name&gt;</span>         <span class="o">merge a branch in</span>
+
+<span class="cm"># LOOK</span>
+<span class="c">git log --oneline</span>       <span class="o">history, compact</span>
+<span class="c">git diff</span>                <span class="o">what did I change?</span>
+
+<span class="cm"># UNDO  (⚠ = careful)</span>
+<span class="c">git restore --staged &lt;f&gt;</span> <span class="o">unstage a file (safe)</span>
+<span class="c">git restore &lt;f&gt;</span>          <span class="o">⚠ discard edits</span>
+<span class="c">git revert &lt;hash&gt;</span>        <span class="o">undo a pushed commit (safe)</span>
+<span class="c">git reset --hard &lt;ref&gt;</span>   <span class="o">⚠⚠ destroys work</span></pre>
+        </div>
+      </section>
+
+      <!-- ============ GLOSSARY ============ -->
+      <section id="glossary" data-keywords="glossary terms definitions vocabulary meaning words jargon repository commit branch remote origin head clone fork pr">
+        <div class="sec-head"><h3><span class="hash">#</span> Glossary</h3><span class="num">14</span></div>
+        <p class="sec-intro">Every confusing word, in plain English.</p>
+        <dl class="gloss">
+          <div class="row"><dt>repository</dt><dd>A project tracked by Git — your folder plus its full history. Often shortened to "repo."</dd></div>
+          <div class="row"><dt>commit</dt><dd>A saved snapshot of your project at a point in time, with a message describing it.</dd></div>
+          <div class="row"><dt>branch</dt><dd>A parallel line of work. <code>main</code> is the default trunk; you create others to experiment safely.</dd></div>
+          <div class="row"><dt>HEAD</dt><dd>A pointer to "where you are right now" — usually the latest commit on your current branch.</dd></div>
+          <div class="row"><dt>staging area</dt><dd>The waiting room. Files you've <code>add</code>-ed sit here until the next <code>commit</code>.</dd></div>
+          <div class="row"><dt>remote</dt><dd>A copy of your repo hosted elsewhere, usually on GitHub.</dd></div>
+          <div class="row"><dt>origin</dt><dd>The default nickname for your main remote (the GitHub repo you cloned or pushed to).</dd></div>
+          <div class="row"><dt>clone</dt><dd>Downloading a full copy of a remote repo to your computer.</dd></div>
+          <div class="row"><dt>fork</dt><dd>Your own copy of someone else's GitHub repo, made on the website.</dd></div>
+          <div class="row"><dt>pull request</dt><dd>A proposal on GitHub to merge your changes into another repo, open to review.</dd></div>
+          <div class="row"><dt>merge</dt><dd>Combining the changes from one branch into another.</dd></div>
+          <div class="row"><dt>conflict</dt><dd>When two changes touch the same lines and Git needs you to choose which wins.</dd></div>
+          <div class="row"><dt>hash</dt><dd>The unique ID of a commit, like <code>a3f9c2e</code>. You only need the first 7 characters.</dd></div>
+          <div class="row"><dt>upstream</dt><dd>The original repo your fork was made from.</dd></div>
+        </dl>
+
+        <div class="callout tip" style="margin-top:28px"><b>You're set</b>Keep this page open in a tab. When you forget a command — and you will, everyone does — search the box at the top instead of hunting online. The daily loop becomes muscle memory within a week.</div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var line = btn.closest('.cmd-top').querySelector('.cmd-line');
+      var text = line ? line.textContent.trim() : '';
+      var done = function(){ btn.textContent='copied'; btn.classList.add('done'); setTimeout(function(){btn.textContent='copy';btn.classList.remove('done');},1300); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(fallback);
+      } else { fallback(); }
+      function fallback(){
+        try{
+          var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';
+          document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);done();
+        }catch(e){ btn.textContent='select+copy'; setTimeout(function(){btn.textContent='copy';},1500); }
+      }
+    });
+  });
+
+  /* ---------- search / filter ---------- */
+  var search = document.getElementById('search');
+  var meta = document.getElementById('searchMeta');
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section'));
+  var noResults = document.createElement('div');
+  noResults.className='no-results';
+  noResults.textContent='// no command matches that. try a simpler word — "commit", "branch", "undo".';
+  document.querySelector('.wrap').appendChild(noResults);
+
+  function norm(s){return (s||'').toLowerCase();}
+
+  function runSearch(q){
+    q = norm(q).trim();
+    var defaultMeta = 'Type to filter every command on the page. Press <kbd>Esc</kbd> to clear.';
+    if(!q){
+      sections.forEach(function(sec){
+        sec.classList.remove('hidden');
+        sec.querySelectorAll('.cmd').forEach(function(c){c.classList.remove('hidden');});
+      });
+      noResults.classList.remove('show');
+      meta.innerHTML = defaultMeta;
+      return;
+    }
+    var totalHits = 0;
+    sections.forEach(function(sec){
+      var secText = norm(sec.getAttribute('data-keywords')) + ' ' + norm(sec.querySelector('.sec-head').textContent);
+      var sectionMatches = secText.indexOf(q) !== -1;
+      var cards = sec.querySelectorAll('.cmd');
+      var visibleCards = 0;
+
+      cards.forEach(function(card){
+        var cardText = norm(card.textContent) + ' ' + norm(card.getAttribute('data-keywords'));
+        var hit = cardText.indexOf(q) !== -1;
+        // if the whole section title matches, keep its cards too
+        if(hit || sectionMatches){ card.classList.remove('hidden'); visibleCards++; }
+        else { card.classList.add('hidden'); }
+      });
+
+      // sections with no cards (glossary) rely on their own text
+      var hasCards = cards.length > 0;
+      var keep = hasCards ? (visibleCards > 0) : sectionMatches;
+      if(keep){ sec.classList.remove('hidden'); totalHits += hasCards ? visibleCards : 1; }
+      else { sec.classList.add('hidden'); }
+    });
+
+    if(totalHits === 0){ noResults.classList.add('show'); meta.innerHTML = '0 matches'; }
+    else { noResults.classList.remove('show'); meta.innerHTML = totalHits + ' match' + (totalHits===1?'':'es') + ' &nbsp;·&nbsp; <kbd>Esc</kbd> to clear'; }
+  }
+
+  search.addEventListener('input', function(){ runSearch(search.value); });
+  search.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ search.value=''; runSearch(''); search.blur(); }
+  });
+
+  /* "/" focuses search */
+  document.addEventListener('keydown', function(e){
+    if(e.key === '/' && document.activeElement !== search){
+      e.preventDefault(); search.focus();
+    }
+  });
+
+  /* ---------- active nav highlight ---------- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav a'));
+  var byId = {};
+  navLinks.forEach(function(a){ byId[a.getAttribute('href').slice(1)] = a; });
+
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          navLinks.forEach(function(a){a.classList.remove('active');});
+          var link = byId[en.target.id];
+          if(link) link.classList.add('active');
+        }
+      });
+    }, {rootMargin:'-10% 0px -80% 0px', threshold:0});
+    sections.forEach(function(s){ io.observe(s); });
+  }
+
+  /* ---------- mobile sidebar ---------- */
+  var sidebar = document.getElementById('sidebar');
+  var menuBtn = document.getElementById('menuBtn');
+  var scrim = document.getElementById('scrim');
+  function closeNav(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); }
+  menuBtn.addEventListener('click', function(){ sidebar.classList.toggle('open'); scrim.classList.toggle('show'); });
+  scrim.addEventListener('click', closeNav);
+  navLinks.forEach(function(a){ a.addEventListener('click', closeNav); });
+})();
+</script>
+</body>
+</html>

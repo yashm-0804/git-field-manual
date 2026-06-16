@@ -1,1 +1,0 @@
-# git-field-manual
